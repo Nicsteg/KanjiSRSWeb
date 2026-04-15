@@ -357,9 +357,9 @@ function renderReview() {
     return;
   }
 
-  const expectedReading = normalizeReading(card.reading || '');
+  const acceptedReadings = getAcceptedReadings(card);
   const normalizedAnswer = normalizeReading(state.reviewAnswer);
-  const isCorrect = expectedReading && normalizedAnswer === expectedReading;
+  const isCorrect = acceptedReadings.length > 0 && acceptedReadings.includes(normalizedAnswer);
   const previews = ['Again', 'Hard', 'Good', 'Easy'].map((rating) => ({
     rating,
     preview: scheduleReview(card, rating, Date.now())
@@ -378,7 +378,7 @@ function renderReview() {
       <input id="reviewAnswer" class="input" lang="ja" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ひらがな / romaji" value="${escapeHtml(state.reviewAnswer)}" />
       ${state.reviewChecked ? `
         <div class="${isCorrect ? 'feedback good' : 'feedback bad'}"><strong>${isCorrect ? 'Correct' : 'Not quite'}</strong></div>
-        <div class="muted">Reading: ${escapeHtml(card.reading || '—')}</div>
+        <div class="muted">Reading${acceptedReadings.length > 1 ? 's' : ''}: ${escapeHtml(formatAcceptedReadings(card, acceptedReadings) || '—')}</div>
         <div class="muted">Meaning: ${escapeHtml(card.meanings.join(', '))}</div>
         ${card.parts.length ? `<div class="muted">Parts: ${escapeHtml(card.parts.join(' '))}</div>` : ''}
         <div class="review-actions">
@@ -742,6 +742,43 @@ function katakanaToHiragana(value) {
 
 function bestReading(onReadings, kunReadings) {
   return normalizeReading((onReadings.find(Boolean) || kunReadings.find(Boolean) || '').replace(/（.*?）/g, ''));
+}
+
+function cleanJapaneseReading(reading) {
+  return normalizeReading(String(reading || '').replace(/（.*?）/g, ''));
+}
+
+function getAcceptedReadings(card) {
+  if (!card) return [];
+
+  if (card.type === 'KANJI') {
+    const entry = state.kanji.find((item) => item.kanji === card.front);
+    if (entry) {
+      return [...new Set([
+        ...(entry.on_readings || []).map(cleanJapaneseReading),
+        ...(entry.kun_readings || []).map(cleanJapaneseReading),
+        ...(entry.name_readings || []).map(cleanJapaneseReading)
+      ].filter(Boolean))];
+    }
+  }
+
+  return [...new Set([cleanJapaneseReading(card.reading)].filter(Boolean))];
+}
+
+function formatAcceptedReadings(card, acceptedReadings) {
+  if (card.type === 'KANJI') {
+    const entry = state.kanji.find((item) => item.kanji === card.front);
+    if (entry) {
+      const display = [...new Set([
+        ...(entry.on_readings || []).map((reading) => cleanJapaneseReading(reading)),
+        ...(entry.kun_readings || []).map((reading) => cleanJapaneseReading(reading)),
+        ...(entry.name_readings || []).map((reading) => cleanJapaneseReading(reading))
+      ].filter(Boolean))];
+      return display.join(', ');
+    }
+  }
+
+  return acceptedReadings.join(', ');
 }
 
 function scheduleReview(card, rating, now) {
