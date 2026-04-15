@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KanjiSRS Web</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Web version</p>
+          <h1>KanjiSRS Web</h1>
+          <p class="subtitle">A browser-based kanji and vocabulary SRS built from your existing KanjiSRS study data.</p>
+        </div>
+        <button id="themeToggle" class="ghost-button">Toggle theme</button>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="home">Home</button>
+        <button class="tab" data-tab="search">Search</button>
+        <button class="tab" data-tab="study">Study List</button>
+        <button class="tab" data-tab="review">Review</button>
+      </nav>
+
+      <main>
+        <section id="home" class="tab-panel active"></section>
+        <section id="search" class="tab-panel"></section>
+        <section id="study" class="tab-panel"></section>
+        <section id="review" class="tab-panel"></section>
+      </main>
+    </div>
+
+    <dialog id="detailModal" class="detail-modal">
+      <div id="detailContent"></div>
+      <form method="dialog" class="modal-actions">
+        <button class="ghost-button">Close</button>
+      </form>
+    </dialog>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
